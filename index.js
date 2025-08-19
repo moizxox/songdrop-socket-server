@@ -25,6 +25,13 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
   });
+
+  socket.emit("song-updated", { songUpdated: true });
+
+  socket.on("refresh-songs", (data) => {
+    console.log("Song sent by guest:");
+    io.emit("refresh-songs-req", { refreshSongs: true });
+  });
 });
 
 app.use(
