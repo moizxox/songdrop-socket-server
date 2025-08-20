@@ -26,12 +26,31 @@ io.on("connection", (socket) => {
     console.log("User disconnected:", socket.id);
   });
 
-  socket.emit("song-updated", { songUpdated: true });
+  socket.emit("welcome", { socketWelcome: true });
 
   socket.on("refresh-songs", (data) => {
     console.log("Song sent by guest:");
     io.emit("refresh-songs-req", { refreshSongs: true });
   });
+
+  socket.on('guest-request', (data) => {
+    // console.log('song updated by guest',data)
+    io.emit('update-songs')
+  })
+
+  socket.on('sent-by-player-req',()=>{
+    io.emit('sent-by-player-res')
+  })
+
+  socket.on('play-song-req',()=>{
+    io.emit('play-song-res')
+  })
+  socket.on('refund-song-req',()=>{
+    io.emit('refund-song-res')
+  })
+  socket.on('substitute-song-req',()=>{
+    io.emit('substitute-song-res')
+  })
 });
 
 app.use(
