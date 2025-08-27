@@ -2,34 +2,19 @@ import express from "express";
 import cors from "cors";
 import { Server } from "socket.io";
 import { createServer } from "http";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 80;
+const PORT = 3000; // change if needed
 
-// Convert comma-separated origins from .env into array
-const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS ? process.env.CORS_ALLOWED_ORIGINS.split(",").map((origin) => origin.trim()) : [];
+// Explicitly allowed origins
+const allowedOrigins = ["http://localhost:3000", "https://socket.felixandfingers.com", "https://songdrop.felixandfingers.com"];
 
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin) return callback(null, true); // allow non-browser requests like Postman
-    
-    // Check if the origin matches any of the allowed origins
-    const isAllowed = allowedOrigins.some(allowedOrigin => {
-      // Remove trailing slash if present for consistent comparison
-      const normalizedAllowedOrigin = allowedOrigin.endsWith('/') 
-        ? allowedOrigin.slice(0, -1) 
-        : allowedOrigin;
-      
-      return origin === normalizedAllowedOrigin || origin.startsWith(normalizedAllowedOrigin);
-    });
-    
-    if (isAllowed) {
+    if (!origin) return callback(null, true); // allow server-to-server / Postman
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.log(`CORS blocked origin: ${origin}`);
       callback(new Error("Not allowed by CORS"));
     }
   },
@@ -41,28 +26,13 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 const server = createServer(app);
-const io = new Server(server, {
-  cors: corsOptions,
-  transports: ['websocket', 'polling'],
-  allowUpgrades: true,
-  pingTimeout: 60000,
-  pingInterval: 25000
-});
-
-// Log middleware for connection events
-io.engine.on('connection_error', (err) => {
-  console.error('Connection error:', err.req.url, err.code, err.message);
-});
+const io = new Server(server, { cors: corsOptions });
 
 io.on("connection", (socket) => {
-  console.log("A user connected:", socket.id, "from origin:", socket.handshake.headers.origin);
+  console.log("A user connected:", socket.id);
 
-  socket.on("disconnect", (reason) => {
-    console.log("User disconnected:", socket.id, "reason:", reason);
-  });
-  
-  socket.on("error", (error) => {
-    console.error("Socket error:", socket.id, error);
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
   });
 
   socket.emit("welcome", { socketWelcome: true });
@@ -76,20 +46,7 @@ io.on("connection", (socket) => {
 });
 
 app.get("/", (req, res) => {
-  res.send("Socket.IO server is running");
-});
-
-app.get("/health", (req, res) => {
-  const status = {
-    status: "ok",
-    uptime: process.uptime(),
-    timestamp: new Date().toISOString(),
-    connections: io.engine.clientsCount,
-    cors: {
-      allowedOrigins
-    }
-  };
-  res.json(status);
+  res.send("Hello World! from production new one");
 });
 
 server.listen(PORT, () => {
