@@ -52,7 +52,7 @@ io.on("connection", (socket) => {
 });
 
 app.get("/", (req, res) => {
-  res.send("Hello World! from production new one");
+  res.send("Songdrop Socket Phase II");
 });
 
 server.listen(PORT, () => {
