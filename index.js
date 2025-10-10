@@ -4,7 +4,7 @@ import { Server } from "socket.io";
 import { createServer } from "http";
 
 const app = express();
-const PORT = 3000; // change if needed
+const PORT = 3001; // change if needed
 
 // Explicitly allowed origins
 const allowedOrigins = ["http://localhost:3000", "https://socket.felixandfingers.com", "https://songdrop.felixandfingers.com"];
@@ -43,6 +43,7 @@ io.on("connection", (socket) => {
   socket.on("play-song-req", (data) => io.emit("play-song-res", { data }));
   socket.on("refund-song-req", (data) => io.emit("refund-song-res", { data }));
   socket.on("substitute-song-req", (data) => io.emit("substitute-song-res", { data }));
+  socket.on("end-concert-req", (data) => io.emit("end-concert-res", { data }));
 });
 
 app.get("/", (req, res) => {
