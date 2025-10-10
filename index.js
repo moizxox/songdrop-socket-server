@@ -42,13 +42,13 @@ io.on("connection", (socket) => {
 
   socket.emit("welcome", { socketWelcome: true });
 
-  socket.on("refresh-songs", (data) => io.emit("refresh-songs-req", { data }));
-  socket.on("guest-request", (data) => io.emit("update-songs", { data }));
-  socket.on("sent-by-player-req", (data) => io.emit("sent-by-player-res", { data }));
-  socket.on("play-song-req", (data) => io.emit("play-song-res", { data }));
-  socket.on("refund-song-req", (data) => io.emit("refund-song-res", { data }));
-  socket.on("substitute-song-req", (data) => io.emit("substitute-song-res", { data }));
-  socket.on("end-concert-req", (data) => io.emit("end-concert-res", { data }));
+  socket.on("refresh-songs", (data) => io.emit("refresh-songs-req", data));
+  socket.on("guest-request", (data) => io.emit("update-songs", data));
+  socket.on("sent-by-player-req", (data) => io.emit("sent-by-player-res", data));
+  socket.on("play-song-req", (data) => io.emit("play-song-res", data));
+  socket.on("refund-song-req", (data) => io.emit("refund-song-res", data));
+  socket.on("substitute-song-req", (data) => io.emit("substitute-song-res", data));
+  socket.on("end-concert-req", (data) => io.emit("end-concert-res", data));
 });
 
 app.get("/", (req, res) => {
