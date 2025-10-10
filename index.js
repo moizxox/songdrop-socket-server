@@ -11,7 +11,7 @@ const allowedOrigins = [
   "http://localhost:3000",
   "https://socket.felixandfingers.com",
   "https://songdrop.felixandfingers.com",
-  "https://darkgrey-hare-375374.hostingersite.com/",
+  "https://darkgrey-hare-375374.hostingersite.com",
 ];
 
 const corsOptions = {
