@@ -49,6 +49,8 @@ io.on("connection", (socket) => {
   socket.on("refund-song-req", (data) => io.emit("refund-song-res", data));
   socket.on("substitute-song-req", (data) => io.emit("substitute-song-res", data));
   socket.on("end-concert-req", (data) => io.emit("end-concert-res", data));
+  // socket.on("concert-update", (data) => console.log("Concert updated", data));
+  socket.on("concert-update", (data) => io.emit("concert-update-res", data));
 });
 
 app.get("/", (req, res) => {
