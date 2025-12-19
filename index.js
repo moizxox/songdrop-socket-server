@@ -44,17 +44,22 @@ io.on("connection", (socket) => {
 
   socket.on("refresh-songs", (data) => io.emit("refresh-songs-req", data));
   socket.on("guest-request", (data) => io.emit("update-songs", data));
-  socket.on("sent-by-player-req", (data) => io.emit("sent-by-player-res", data));
+  socket.on("sent-by-player-req", (data) =>
+    io.emit("sent-by-player-res", data)
+  );
   socket.on("play-song-req", (data) => io.emit("play-song-res", data));
   socket.on("refund-song-req", (data) => io.emit("refund-song-res", data));
-  socket.on("substitute-song-req", (data) => io.emit("substitute-song-res", data));
+  socket.on("substitute-song-req", (data) =>
+    io.emit("substitute-song-res", data)
+  );
   socket.on("end-concert-req", (data) => io.emit("end-concert-res", data));
   // socket.on("concert-update", (data) => console.log("Concert updated", data));
   socket.on("concert-update", (data) => io.emit("concert-update-res", data));
+  socket.on("credits-info-req", (data) => io.emit("credits-info-res", data));
 });
 
 app.get("/", (req, res) => {
-  res.send("Songdrop Socket Phase II");
+  res.send("Songdrop Socket Phase Reviews Update");
 });
 
 server.listen(PORT, () => {
