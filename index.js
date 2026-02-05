@@ -7,7 +7,13 @@ const app = express();
 const PORT = 3001; // change if needed
 
 // Explicitly allowed origins
-const allowedOrigins = ["http://localhost:3000", "https://socket.felixandfingers.com", "https://songdrop.felixandfingers.com", "https://darkgrey-hare-375374.hostingersite.com"];
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://socket.felixandfingers.com",
+  "https://songdrop.felixandfingers.com",
+  "https://darkgrey-hare-375374.hostingersite.com",
+  "https://lightcoral-clam-624972.hostingersite.com",
+];
 
 const corsOptions = {
   origin: function (origin, callback) {
