@@ -56,6 +56,7 @@ io.on("connection", (socket) => {
   socket.on("test-req", (data) => io.emit("test-res", data));
   socket.on("send-admin-reg-req", (data) => io.emit("send-admin-reg-res", data));
   socket.on("phrase-req", (data) => io.emit("phrase-res", data));
+  socket.on("option-update-req", (data) => io.emit("option-update-res", data));
 });
 
 app.get("/", (req, res) => {
