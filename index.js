@@ -58,6 +58,7 @@ io.on("connection", (socket) => {
   socket.on("phrase-req", (data) => io.emit("phrase-res", data));
   socket.on("stop-song-req", (data) => io.emit("stop-song-res", data));
   socket.on("option-update-req", (data) => io.emit("option-update-res", data));
+  socket.on("event-type-update-req", (data) => io.emit("event-type-update-res", data));
 });
 
 app.get("/", (req, res) => {
