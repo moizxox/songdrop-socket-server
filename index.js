@@ -65,6 +65,15 @@ app.get("/", (req, res) => {
   res.send("Songdrop Socket Phase Reviews Update");
 });
 
+app.get("/health", (req, res) => {
+  res.json({
+    status: "ok",
+    uptime: process.uptime(),
+    connections: io.engine.clientsCount,
+    timestamp: new Date().toISOString(),
+  });
+});
+
 server.listen(PORT, () => {
   console.log(`Server running on port http://localhost:${PORT}`);
 });
