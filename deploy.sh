@@ -34,9 +34,11 @@ npm install --omit=dev
 
 # Stop any previous PM2 app and leftover node processes for this server
 pm2 delete "${PM2_APP_NAME}" >/dev/null 2>&1 || true
+# Old path + live path (zombie processes hold :3000 and break deploys)
 pkill -f "/home/socket/live/songdrop-socket-server/index.js" >/dev/null 2>&1 || true
 pkill -f "/home/socket/songdrop-socket-server/index.js" >/dev/null 2>&1 || true
-sleep 1
+fuser -k 3000/tcp >/dev/null 2>&1 || true
+sleep 2
 
 pm2 start "${REMOTE_DIR}/index.js" --name "${PM2_APP_NAME}" --cwd "${REMOTE_DIR}"
 pm2 save
@@ -48,7 +50,10 @@ curl -sS "http://127.0.0.1:3000/" || true
 echo
 curl -sS "http://127.0.0.1:3000/health" || true
 echo
+curl -sS "http://127.0.0.1:3000/sd-socket/?EIO=4&transport=polling" | head -c 120 || true
+echo
 REMOTE
 
 echo "==> Deploy complete"
 echo "    Health: https://socket.felixandfingers.com/health"
+echo "    Socket: https://socket.felixandfingers.com/sd-socket/"

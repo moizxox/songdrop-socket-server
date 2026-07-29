@@ -7,24 +7,35 @@ import { createServer } from "http";
 const app = express();
 const PORT = Number(process.env.HTTP_PORT || process.env.PORT || 3000);
 
-// Explicitly allowed origins
+/**
+ * LiteSpeed on this host treats dotted paths (e.g. /socket.io/) as static files
+ * and never reverse-proxies them to Node. Use a path WITHOUT a file extension.
+ */
+const SOCKET_PATH = process.env.SOCKET_PATH || "/sd-socket/";
+
+// Explicitly allowed browser origins (scheme + host, no trailing slash)
 const allowedOrigins = [
   "http://localhost:3000",
+  "http://localhost:5173",
+  "http://localhost:8080",
   "https://socket.felixandfingers.com",
   "https://songdrop.felixandfingers.com",
+  "https://www.songdrop.felixandfingers.com",
+  "https://songdrop.live",
+  "https://www.songdrop.live",
   "https://darkgrey-hare-375374.hostingersite.com",
   "https://lightcoral-clam-624972.hostingersite.com",
-  "https://songdrop.live",
 ];
 
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true); // allow server-to-server / Postman
+  origin(origin, callback) {
+    // Allow non-browser / same-origin tools (no Origin header)
+    if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
+      return callback(null, true);
     }
+    // Reject quietly — throwing Error makes Express 5 return 500
+    return callback(null, false);
   },
   methods: ["GET", "POST"],
   allowedHeaders: ["Content-Type", "Authorization"],
@@ -34,7 +45,11 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 const server = createServer(app);
-const io = new Server(server, { cors: corsOptions });
+const io = new Server(server, {
+  path: SOCKET_PATH,
+  cors: corsOptions,
+  transports: ["websocket", "polling"],
+});
 
 io.on("connection", (socket) => {
   console.log("A user connected:", socket.id);
@@ -56,7 +71,6 @@ io.on("connection", (socket) => {
     io.emit("substitute-song-res", data),
   );
   socket.on("end-concert-req", (data) => io.emit("end-concert-res", data));
-  // socket.on("concert-update", (data) => console.log("Concert updated", data));
   socket.on("concert-update", (data) => io.emit("concert-update-res", data));
   socket.on("credits-info-req", (data) => io.emit("credits-info-res", data));
   socket.on("test-req", (data) => io.emit("test-res", data));
@@ -72,7 +86,7 @@ io.on("connection", (socket) => {
 });
 
 app.get("/", (req, res) => {
-  res.send("New SSH Update");
+  res.send("SongDrop socket server");
 });
 
 app.get("/health", (req, res) => {
@@ -80,10 +94,11 @@ app.get("/health", (req, res) => {
     status: "ok",
     uptime: process.uptime(),
     connections: io.engine.clientsCount,
+    socketPath: SOCKET_PATH,
     timestamp: new Date().toISOString(),
   });
 });
 
 server.listen(PORT, () => {
-  console.log(`Server running on port http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT} (path ${SOCKET_PATH})`);
 });
