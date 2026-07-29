@@ -1,10 +1,11 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { Server } from "socket.io";
 import { createServer } from "http";
 
 const app = express();
-const PORT = 3001; // change if needed
+const PORT = Number(process.env.HTTP_PORT || process.env.PORT || 3000);
 
 // Explicitly allowed origins
 const allowedOrigins = [
@@ -13,6 +14,7 @@ const allowedOrigins = [
   "https://songdrop.felixandfingers.com",
   "https://darkgrey-hare-375374.hostingersite.com",
   "https://lightcoral-clam-624972.hostingersite.com",
+  "https://songdrop.live",
 ];
 
 const corsOptions = {

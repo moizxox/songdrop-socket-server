@@ -32,14 +32,22 @@ export PATH="/home/socket/node/bin:$PATH"
 cd "${REMOTE_DIR}"
 npm install --omit=dev
 
-if pm2 describe "${PM2_APP_NAME}" >/dev/null 2>&1; then
-  pm2 restart "${PM2_APP_NAME}" --update-env
-else
-  pm2 start index.js --name "${PM2_APP_NAME}"
-fi
+# Stop any previous PM2 app and leftover node processes for this server
+pm2 delete "${PM2_APP_NAME}" >/dev/null 2>&1 || true
+pkill -f "/home/socket/live/songdrop-socket-server/index.js" >/dev/null 2>&1 || true
+pkill -f "/home/socket/songdrop-socket-server/index.js" >/dev/null 2>&1 || true
+sleep 1
 
+pm2 start "${REMOTE_DIR}/index.js" --name "${PM2_APP_NAME}" --cwd "${REMOTE_DIR}"
 pm2 save
+sleep 2
 pm2 status "${PM2_APP_NAME}"
+
+echo "=== local checks ==="
+curl -sS "http://127.0.0.1:3000/" || true
+echo
+curl -sS "http://127.0.0.1:3000/health" || true
+echo
 REMOTE
 
 echo "==> Deploy complete"
