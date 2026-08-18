@@ -12,6 +12,7 @@ const allowedOrigins = [
   "https://socket.felixandfingers.com",
   "https://songdrop.felixandfingers.com",
   "https://darkgrey-hare-375374.hostingersite.com",
+  "https://songdrop.live",
   "https://lightcoral-clam-624972.hostingersite.com",
 ];
 
@@ -30,6 +31,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.use(express.json({ limit: "64kb" }));
 
 const server = createServer(app);
 const io = new Server(server, { cors: corsOptions });
@@ -59,6 +61,37 @@ io.on("connection", (socket) => {
   socket.on("stop-song-req", (data) => io.emit("stop-song-res", data));
   socket.on("option-update-req", (data) => io.emit("option-update-res", data));
   socket.on("event-type-update-req", (data) => io.emit("event-type-update-res", data));
+});
+
+// Server-to-server broadcast.
+//
+// Every other event here is relayed browser -> browser. Support replies and
+// notifications are written by WordPress, which is not a socket client, so PHP
+// posts them here instead and we relay them with the same io.emit fan-out the
+// browser events use. Clients filter on user_id, exactly like they already
+// filter on concert_id.
+const RELAYABLE_EVENTS = new Set([
+  "support-update-res",
+  "notification-res",
+  "community-update-res",
+]);
+
+app.post("/emit", (req, res) => {
+  // Optional shared secret: set SOCKET_EMIT_KEY on this server AND define
+  // SD_SOCKET_KEY in wp-config to lock the endpoint down. Left unset, it stays
+  // open like the socket events themselves.
+  const expected = process.env.SOCKET_EMIT_KEY;
+  if (expected && req.get("x-socket-key") !== expected) {
+    return res.status(401).json({ ok: false, error: "bad key" });
+  }
+
+  const { event, data } = req.body || {};
+  if (!RELAYABLE_EVENTS.has(event)) {
+    return res.status(400).json({ ok: false, error: "event not relayable" });
+  }
+
+  io.emit(event, data || {});
+  return res.json({ ok: true, event, connections: io.engine.clientsCount });
 });
 
 app.get("/", (req, res) => {
