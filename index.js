@@ -43,12 +43,32 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.use(express.json());
+
+const SOCKET_KEY = process.env.SOCKET_KEY || "";
+
+/** WordPress POSTs here for support + notifications (Viktor cannot use the browser socket). */
+const SERVER_EMIT_EVENTS = new Set(["support-update-res", "notification-res"]);
 
 const server = createServer(app);
 const io = new Server(server, {
   path: SOCKET_PATH,
   cors: corsOptions,
   transports: ["websocket", "polling"],
+});
+
+app.post("/emit", (req, res) => {
+  if (SOCKET_KEY && req.headers["x-socket-key"] !== SOCKET_KEY) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const { event, data } = req.body || {};
+  if (!event || !SERVER_EMIT_EVENTS.has(event)) {
+    return res.status(400).json({ error: "Invalid or disallowed event" });
+  }
+
+  io.emit(event, data || {});
+  return res.json({ ok: true });
 });
 
 io.on("connection", (socket) => {
@@ -83,10 +103,13 @@ io.on("connection", (socket) => {
   socket.on("event-type-update-req", (data) =>
     io.emit("event-type-update-res", data),
   );
+  socket.on("community-update-req", (data) =>
+    io.emit("community-update-res", data),
+  );
 });
 
 app.get("/", (req, res) => {
-  res.send("SongDrop socket server");
+  res.send("SongDrop socket server — new Viktor socket update: POST /emit (support + notifications), community-update-req relay");
 });
 
 app.get("/health", (req, res) => {
@@ -96,6 +119,7 @@ app.get("/health", (req, res) => {
     connections: io.engine.clientsCount,
     socketPath: SOCKET_PATH,
     timestamp: new Date().toISOString(),
+    note: "New Viktor socket update: POST /emit for support-update-res + notification-res; community-update-req → community-update-res",
   });
 });
 
