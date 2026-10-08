@@ -25,6 +25,7 @@ const allowedOrigins = [
   "https://www.songdrop.live",
   "https://darkgrey-hare-375374.hostingersite.com",
   "https://lightcoral-clam-624972.hostingersite.com",
+  "https://floralwhite-wallaby-976186.hostingersite.com"
 ];
 
 const corsOptions = {
